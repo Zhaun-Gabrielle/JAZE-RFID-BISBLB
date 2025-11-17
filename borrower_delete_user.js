@@ -32,9 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // -------------------- Check Active Borrows --------------------
     function hasActiveBorrower(borrowerId) {
-        return Object.values(allHistory).some(history =>
-            history.borrower_id === borrowerId &&
-            (!history.return_date || history.return_date.trim() === "")
+        // Loop two levels deep because each book_uid has multiple history entries
+        return Object.values(allHistory).some(bookHistory =>
+            Object.values(bookHistory).some(historyVal =>
+                historyVal.borrower_id === borrowerId &&
+                (!historyVal.return_date || historyVal.return_date.trim() === "")
+            )
         );
     }
 
@@ -59,18 +62,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --------------------------------------------------------------------
-    // 🔵 NEW FUNCTION: Delete history entries for this borrower
+    // 🔵 FIXED FUNCTION: Delete history entries for this borrower
     // --------------------------------------------------------------------
     async function deleteBorrowHistoryForBorrower(borrowerId) {
+        const snapshot = await get(ref(db, "borrow_history"));
+        const historyData = snapshot.val() || {};
         const updates = {};
 
-        Object.entries(allHistory).forEach(([historyKey, historyVal]) => {
-            if (historyVal.borrower_id === borrowerId) {
-                updates[`borrow_history/${historyKey}`] = null; // delete this history
-            }
+        // Loop through each book_uid
+        Object.entries(historyData).forEach(([bookUid, bookHistory]) => {
+
+            // Loop through each history entry under the book
+            Object.entries(bookHistory).forEach(([historyKey, historyVal]) => {
+
+                if (historyVal.borrower_id === borrowerId) {
+                    updates[`borrow_history/${bookUid}/${historyKey}`] = null;
+                }
+
+            });
         });
 
-        // Only run update if there is something to delete
         if (Object.keys(updates).length > 0) {
             await update(ref(db), updates);
         }
@@ -81,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!selectedBorrowerId) return;
 
         try {
-            // 🔵 NEW: Delete all related borrow history first
+            // Delete all related borrow history first
             await deleteBorrowHistoryForBorrower(selectedBorrowerId);
 
             // Delete the borrower itself
