@@ -2,47 +2,21 @@
 import { db } from './firebase.js';
 import { ref, get, update } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
-/* ---------------------------------------------------------
-Reader Status Monitor (Based on last_update)
-   Structure:
-   readers
-        reader_no1
-            last_update
-            status
-
-   zulu_time  <-- top-level, used as reference
-
-    Behavior:
-   - Checks all readers every 10 seconds.
-   - If last_update is "" or missing → Offline.
-   - If last_update is older than 30 seconds compared to zulu_time → Offline.
-   - Else → Online.
---------------------------------------------------------- */
-
 const OFFLINE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 
 async function updateReaderStatus() {
   try {
     // Get zulu_time from database
     const zuluSnapshot = await get(ref(db, 'zulu_time'));
-    if (!zuluSnapshot.exists()) {
-//      console.warn("⚠️ No zulu_time found in database. Skipping status update.");
-      return;
-    }
+    if (!zuluSnapshot.exists()) return;
+
     const zuluTimeStr = zuluSnapshot.val();
     const referenceTime = new Date(zuluTimeStr);
-
-    if (isNaN(referenceTime.getTime())) {
-//      console.error("❌ Invalid zulu_time format in database:", zuluTimeStr);
-      return;
-    }
+    if (isNaN(referenceTime.getTime())) return;
 
     // Get all readers
     const snapshot = await get(ref(db, 'readers'));
-    if (!snapshot.exists()) {
-//      console.log("⚠️ No readers found.");
-      return;
-    }
+    if (!snapshot.exists()) return;
 
     const readers = snapshot.val();
     const updates = {};
@@ -50,31 +24,41 @@ async function updateReaderStatus() {
     for (const readerNo in readers) {
       const reader = readers[readerNo];
       const lastUpdate = reader?.last_update;
+      const currentStatus = reader?.status || "Offline";
 
       // If no timestamp or blank -> Offline
       if (!lastUpdate || lastUpdate.trim() === "") {
-        updates[`readers/${readerNo}/status`] = "Offline";
+        if (currentStatus !== "Offline") {
+          updates[`readers/${readerNo}/status`] = "Offline";
+        }
         continue;
       }
 
       // Compare last_update to zulu_time
       const lastSeen = new Date(lastUpdate);
       if (isNaN(lastSeen.getTime())) {
-//        console.warn(`⚠️ Invalid last_update for reader ${readerNo}: ${lastUpdate}`);
-        updates[`readers/${readerNo}/status`] = "Offline";
+        if (currentStatus !== "Offline") {
+          updates[`readers/${readerNo}/status`] = "Offline";
+        }
         continue;
       }
 
       const diffMs = referenceTime - lastSeen;
-      updates[`readers/${readerNo}/status`] = diffMs > OFFLINE_THRESHOLD_MS ? "Offline" : "Online";
+      const newStatus = diffMs > OFFLINE_THRESHOLD_MS ? "Offline" : "Online";
+
+      // Only update if the status actually changed
+      if (currentStatus !== newStatus) {
+        updates[`readers/${readerNo}/status`] = newStatus;
+      }
     }
 
-    // Apply updates in one batch
-    await update(ref(db), updates);
-//   console.log(` Reader statuses updated based on zulu_time: ${zuluTimeStr}`);
+    // Apply updates in one batch (only if something changed)
+    if (Object.keys(updates).length > 0) {
+      await update(ref(db), updates);
+    }
 
   } catch (error) {
-//    console.error("❌ Error updating reader statuses:", error);
+    console.error("❌ Error updating reader statuses:", error);
   }
 }
 
