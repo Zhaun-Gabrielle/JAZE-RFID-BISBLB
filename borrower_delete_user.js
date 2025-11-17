@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { ref, remove, get, onValue } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+import { ref, remove, get, onValue, update } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 import { loadBorrowers } from './borrower_users.js';
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let selectedBorrowerId = null;
 
-    // -------------------- Helpers --------------------
     const openModal = () => deleteModal.style.display = "flex";
     const closeModal = () => deleteModal.style.display = "none";
     const showSuccess = (msg) => { successMessage.textContent = msg; successModal.style.display = "flex"; };
@@ -24,19 +23,18 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteCloseBtns.forEach(btn => btn.onclick = closeModal);
     successCloseBtns.forEach(btn => btn.onclick = () => successModal.style.display = "none");
 
-    // -------------------- Updated: Load Borrow History --------------------
-    let allHistory = {}; // store history for synchronous check
+    // -------------------- Load Borrow History --------------------
+    let allHistory = {};
     const historyRef = ref(db, "borrow_history");
     onValue(historyRef, (snapshot) => {
         allHistory = snapshot.val() || {};
     });
 
-    // -------------------- Updated: Check if borrower has active borrows --------------------
+    // -------------------- Check Active Borrows --------------------
     function hasActiveBorrower(borrowerId) {
-        return Object.values(allHistory).some(bookRecords =>
-            Object.values(bookRecords).some(record =>
-                record.borrower_id === borrowerId && (!record.return_date || record.return_date.trim() === "")
-            )
+        return Object.values(allHistory).some(history =>
+            history.borrower_id === borrowerId &&
+            (!history.return_date || history.return_date.trim() === "")
         );
     }
 
@@ -53,23 +51,47 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             deleteMessage.textContent = "Are you sure you want to delete this borrower? This action cannot be undone.";
             deleteConfirmBtn.disabled = false;
-            deleteConfirmBtn.style.background = ""; // reset
+            deleteConfirmBtn.style.background = "";
             deleteConfirmBtn.style.cursor = "pointer";
         }
 
         openModal();
     });
 
+    // --------------------------------------------------------------------
+    // 🔵 NEW FUNCTION: Delete history entries for this borrower
+    // --------------------------------------------------------------------
+    async function deleteBorrowHistoryForBorrower(borrowerId) {
+        const updates = {};
+
+        Object.entries(allHistory).forEach(([historyKey, historyVal]) => {
+            if (historyVal.borrower_id === borrowerId) {
+                updates[`borrow_history/${historyKey}`] = null; // delete this history
+            }
+        });
+
+        // Only run update if there is something to delete
+        if (Object.keys(updates).length > 0) {
+            await update(ref(db), updates);
+        }
+    }
+
     // -------------------- Confirm Delete --------------------
     deleteConfirmBtn.addEventListener("click", async () => {
         if (!selectedBorrowerId) return;
 
         try {
+            // 🔵 NEW: Delete all related borrow history first
+            await deleteBorrowHistoryForBorrower(selectedBorrowerId);
+
+            // Delete the borrower itself
             await remove(ref(db, "borrower/" + selectedBorrowerId));
+
             closeModal();
-            loadBorrowers(); // refresh table
-            showSuccess("Borrower deleted successfully!");
+            loadBorrowers();
+            showSuccess("Borrower and related borrow history removed successfully!");
             selectedBorrowerId = null;
+
         } catch (err) {
             console.error(err);
             closeModal();
