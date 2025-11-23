@@ -77,7 +77,7 @@ const security_pass = metadata.security_pass || 'Yes'; // fallback if missing
   const last_seen = "Adding Station";
 
   if (!bookUid || !metadataId || !tagUid) {
-    errorBox.textContent = 'Book UID, Metadata ID, and Tag UID are required.';
+    errorBox.textContent = 'ISBN and Tag UID are required.';
     return;
   }
 
@@ -97,11 +97,11 @@ const security_pass = metadata.security_pass || 'Yes'; // fallback if missing
       });
 
       if (bookUidExists && tagUidExists) {
-        errorBox.textContent = 'Both Book UID and Tag UID already exist!';
+        errorBox.textContent = 'Both ISBN and Tag UID already exist!';
         return;
       }
       if (bookUidExists) {
-        errorBox.textContent = 'Book UID already exists!';
+        errorBox.textContent = 'ISBN already exists!';
         return;
       }
       if (tagUidExists) {

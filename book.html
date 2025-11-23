@@ -33,7 +33,7 @@
   <!-- Fixed controls -->
   <div class="controls">
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search by title, author, keyword, or book UID..." />
+      <input type="text" id="searchInput" placeholder="Search by ISBN, title, author,  or keyword" />
       <button id="addBookBtn" class="create-btn">➕ Add New Book</button>
     </div>
   </div>
@@ -60,7 +60,7 @@
     <label>Author</label>
     <input type="text" id="bookAuthor" required>
 
-    <label>Preferred Location</label>
+    <label>Assigned Location</label>
     <select id="bookPreferredLocation" required>
       <option value="" disabled selected>Select location</option>
       <!-- Options will be populated dynamically from readers/{reader_no}/location -->
@@ -105,7 +105,7 @@
       </div>
       <!-- 🔹 New Preferred Location dropdown added here -->
       <div class="preview-row">
-  <strong>Preferred Location:</strong><span id="previewBookPreferredLocation"></span>
+  <strong>Assigned Location:</strong><span id="previewBookPreferredLocation"></span>
 </div>
 <!-- End of new Preferred Location -->
        <div class="preview-row">
@@ -140,7 +140,7 @@
     <!-- 🔴 Inline error (fixed height, above Book UID) -->
     <div id="formError" class="error-message"></div>
 
-    <label>Book UID</label>
+    <label>Book ISBN</label>
     <input type="text" id="unitBookUid" placeholder="" required autofocus>
     
     <label>Metadata ID</label>

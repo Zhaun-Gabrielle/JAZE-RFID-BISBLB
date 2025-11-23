@@ -242,7 +242,7 @@ function showPopup(metaId) {
       if (!popupContent.querySelector('#bookTableContainer')) {
         popupContent.innerHTML = `
           <div class="filter-controls">
-            <input type="text" id="bookUidSearch" placeholder="Search Book UID..." 
+            <input type="text" id="bookUidSearch" placeholder="Search ISBN" 
               style="margin-bottom:10px;width:98%;padding:6px;border:1px solid #ccc;border-radius:5px;" />
             <select id="locationFilter" style= "display:none;">
               <option value="All">All Locations</option>
@@ -333,7 +333,7 @@ if (filteredUnits.length === 0) {
 
     tableHTML += `<h3>${locationKey}</h3><table>
       <tr>
-        <th style="width:20%; text-align:center;">Book UID</th>
+        <th style="width:20%; text-align:center;">ISBN</th>
         <th style="width:20%; text-align:center;">Tag UID</th>
         <th style="width:20%; text-align:center;">Status</th>
         <th style="width:20%; text-align:center;">${locationHeader}</th>

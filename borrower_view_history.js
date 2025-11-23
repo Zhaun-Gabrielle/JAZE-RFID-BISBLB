@@ -57,7 +57,7 @@ function renderBorrowerHistory(borrowerId) {
       <thead>
         <tr>
           <th>Book Title</th>
-          <th>Book ID</th>
+          <th>ISBN</th>
           <th>Borrow Date</th>
           <th>Return Date</th>
           <th>Location</th>

@@ -109,7 +109,8 @@ Object.values(histories).forEach(h => {
       borrowingsToday.push({
         borrower: getBorrowerName(borrower),
         book: meta.title || "Unknown",
-        borrowDt // store the actual Date object
+        borrowDt, // store the actual Date object
+        status: latestHistory.status || "Unknown"
       });
     }
   });
@@ -196,9 +197,10 @@ borrowingsTodayTableBody.innerHTML = borrowingsToday.length
          <td>${b.borrower}</td>
          <td>${b.book}</td>
          <td>${b.borrowDt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+         <td>${b.status}</td>
        </tr>`
     ).join("")
-  : `<tr><td colspan="3">No borrowings today</td></tr>`;
+  : `<tr><td colspan="4">No borrowings today</td></tr>`;
 
 
   // 🏆 Top 10 Books

@@ -173,7 +173,7 @@ const unitsWithDisplay = relatedUnits.map(u => {
         });
 
         let html = `<div class="filter-controls">
-            <input type="text" id="bookUidSearch" placeholder="Search Book UID..." 
+            <input type="text" id="bookUidSearch" placeholder="Search ISBN..." 
                 style="margin-bottom:10px;width:98%;padding:6px;border:1px solid #ccc;border-radius:5px;" />
             <select id="locationFilter">
                 <option value="All">All Locations</option>
@@ -193,7 +193,7 @@ const unitsWithDisplay = relatedUnits.map(u => {
             html += `<h3>${locationKey}</h3>
             <table>
                 <tr>
-                    <th style="width:20%; text-align:center;">Book UID</th>
+                    <th style="width:20%; text-align:center;">ISBN</th>
                     <th style="width:20%; text-align:center;">Tag UID</th>
                     <th style="width:20%; text-align:center;">Status</th>
                     <th style="width:20%; text-align:center;">Location</th>
