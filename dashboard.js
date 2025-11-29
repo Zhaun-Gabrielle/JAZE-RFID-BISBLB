@@ -110,7 +110,7 @@ Object.values(histories).forEach(h => {
         borrower: getBorrowerName(borrower),
         book: meta.title || "Unknown",
         borrowDt, // store the actual Date object
-        status: latestHistory.status || "Unknown"
+        status: h.status || "Unknown",
       });
     }
   });
@@ -235,3 +235,4 @@ function initDashboardListeners() {
 
 // 🚀 Start Dashboard Sync
 initDashboardListeners();
+
