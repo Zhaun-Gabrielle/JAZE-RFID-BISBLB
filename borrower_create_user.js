@@ -174,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideConfirm();
 
         const tag_uid = idCardInput.value.trim();
+        const borrow_count = 0;
         const borrowerData = {
 //          tag_uid,
             fname: fnameInput.value.trim(),
@@ -181,7 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
             lname: lnameInput.value.trim(),
             abbrname: abbrInput.value.trim(),
             email: emailInput.value.trim().toLowerCase(),
-            level: levelSelect.value
+            level: levelSelect.value,
+            borrow_count: borrow_count
         };
 
         // Only include course/year if they are not "----"
